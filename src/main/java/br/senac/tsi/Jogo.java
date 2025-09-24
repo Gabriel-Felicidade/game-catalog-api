@@ -39,5 +39,10 @@ public class Jogo extends PanacheEntityBase {
             joinColumns = @JoinColumn(name = "jogo_id"),
             inverseJoinColumns = @JoinColumn(name = "genero_id")
     )
+
+    // ... dentro da classe Jogo
+    @Enumerated(EnumType.STRING) // Salva o nome do enum ("LIVRE") no banco, em vez do número (0)
+    public ClassificacaoIndicativa classificacao;
+
     public Set<Genero> generos = new HashSet<>(); // Simplificado
 }

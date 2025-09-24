@@ -10,13 +10,24 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.Link;
+
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Path("/jogos")
+@Tag(name = "Jogos", description = "Operações relacionadas a jogos")
 public class JogoResource {
+
+    @Context
+    UriInfo uriInfo; // Injete UriInfo para construir URLs
 
     @GET
     @Path("/search")
@@ -59,14 +70,29 @@ public class JogoResource {
 
     @GET
     @Path("/{id}")
+    @Operation(summary = "Buscar Jogo por ID", description = "Retorna os detalhes de um jogo específico.")
+    @APIResponse(responseCode = "200", description = "Jogo encontrado")
+    @APIResponse(responseCode = "404", description = "Jogo não encontrado")
     public Response getById(@PathParam("id") long id) {
         return Jogo.findByIdOptional(id)
-                .map(jogo -> Response.ok(jogo).build())
+                .map(jogo -> {
+                    // Cria o link "self" (para o próprio recurso)
+                    Link selfLink = Link.fromUri(uriInfo.getAbsolutePath()).rel("self").type("application/json").build();
+
+                    // Cria o link para a desenvolvedora
+                    Link devLink = Link.fromUriBuilder(uriInfo.getBaseUriBuilder().path(DesenvolvedoraResource.class).path(Long.toString(jogo.desenvolvedora.id))).rel("desenvolvedora").type("application/json").build();
+
+                    // Adiciona os links na resposta
+                    return Response.ok(jogo).links(selfLink, devLink).build();
+                })
                 .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @POST
     @Transactional
+    @Operation(summary = "Inserir novo Jogo", description = "Cria um novo jogo no catálogo.")
+    @APIResponse(responseCode = "201", description = "Jogo criado com sucesso")
+    @APIResponse(responseCode = "400", description = "Dados inválidos para o jogo")
     public Response insert(@Valid Jogo jogo) {
         jogo.id = null; // Garante que é uma nova entidade
 
