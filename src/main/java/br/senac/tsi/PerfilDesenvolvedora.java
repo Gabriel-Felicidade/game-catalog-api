@@ -19,9 +19,7 @@ public class PerfilDesenvolvedora extends PanacheEntityBase {
     public String principaisFranquias;
 
     // Relacionamento Um-para-Um (lado inverso)
-    // 'mappedBy' indica que a entidade 'Desenvolvedora' é a dona do relacionamento.
     @OneToOne(mappedBy = "perfil", fetch = FetchType.LAZY)
-    @JsonIgnore // Essencial para evitar um loop infinito de serialização
-    public br.senac.tsi.gamecatalog.Desenvolvedora desenvolvedora;
+    @JsonIgnore
+    public Desenvolvedora desenvolvedora; // Simplificado
 }
-

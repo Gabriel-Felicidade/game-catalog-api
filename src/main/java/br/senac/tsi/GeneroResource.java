@@ -25,6 +25,7 @@ public class GeneroResource {
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size) {
 
+        // Sugestão: Adicionar validação de sort aqui também
         Sort sortObj = Sort.by(sort, "desc".equalsIgnoreCase(direction) ? Sort.Direction.Descending : Sort.Direction.Ascending);
         PanacheQuery<Genero> query = (q == null || q.isBlank())
                 ? Genero.findAll(sortObj)
@@ -36,7 +37,12 @@ public class GeneroResource {
         response.totalItens = query.count();
         response.totalPaginas = query.pageCount();
         response.temMais = page < (query.pageCount() - 1);
-        response.proximaPagina = response.temMais ? "/generos/search?q="+(q != null ? q : "")+"&page="+(page + 1)+"&size="+size : "";
+
+        // --- MELHORIA: Corrigido para incluir sort e direction na URL ---
+        response.proximaPagina = response.temMais
+                ? String.format("/generos/search?q=%s&sort=%s&direction=%s&page=%d&size=%d",
+                (q != null ? q : ""), sort, direction, (page + 1), size)
+                : "";
 
         return Response.ok(response).build();
     }

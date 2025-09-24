@@ -28,10 +28,9 @@ public class Jogo extends PanacheEntityBase {
     public double notaCritica;
 
     // Relacionamento Muitos-para-Um
-    // Vários jogos podem pertencer a uma desenvolvedora.
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "desenvolvedora_id")
-    public br.senac.tsi.gamecatalog.Desenvolvedora desenvolvedora;
+    public Desenvolvedora desenvolvedora; // Simplificado
 
     // Relacionamento Muitos-para-Muitos (lado dono)
     @ManyToMany(fetch = FetchType.LAZY)
@@ -40,6 +39,5 @@ public class Jogo extends PanacheEntityBase {
             joinColumns = @JoinColumn(name = "jogo_id"),
             inverseJoinColumns = @JoinColumn(name = "genero_id")
     )
-    public Set<br.senac.tsi.gamecatalog.Genero> generos = new HashSet<>();
+    public Set<Genero> generos = new HashSet<>(); // Simplificado
 }
-

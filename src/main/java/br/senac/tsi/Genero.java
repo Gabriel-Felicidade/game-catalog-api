@@ -22,7 +22,6 @@ public class Genero extends PanacheEntityBase {
 
     // Relacionamento Muitos-para-Muitos (lado inverso)
     @ManyToMany(mappedBy = "generos", fetch = FetchType.LAZY)
-    @JsonIgnore // Evita loop na serialização
-    public Set<br.senac.tsi.gamecatalog.Jogo> jogos = new HashSet<>();
+    @JsonIgnore
+    public Set<Jogo> jogos = new HashSet<>(); // Simplificado
 }
-

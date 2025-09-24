@@ -1,14 +1,13 @@
 package br.senac.tsi.gamecatalog;
 
-import br.senac.tsi.gamecatalog.SearchDesenvolvedoraResponse;
-import br.senac.tsi.gamecatalog.Desenvolvedora;
-import br.senac.tsi.gamecatalog.Jogo;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.quarkus.panache.common.Parameters;
 import io.quarkus.panache.common.Sort;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+
 import java.util.List;
 import java.util.Set;
 
@@ -24,7 +23,14 @@ public class DesenvolvedoraResource {
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size) {
 
+        // --- CORREÇÃO: Validar o campo de ordenação ---
+        Set<String> allowedSortFields = Set.of("id", "nome", "fundacao", "nacionalidade");
+        if (!allowedSortFields.contains(sort)) {
+            sort = "id"; // Volta para o padrão se o campo for inválido
+        }
+
         Sort sortObj = Sort.by(sort, "desc".equalsIgnoreCase(direction) ? Sort.Direction.Descending : Sort.Direction.Ascending);
+
         PanacheQuery<Desenvolvedora> query = (q == null || q.isBlank())
                 ? Desenvolvedora.findAll(sortObj)
                 : Desenvolvedora.find("lower(nome) like ?1 or lower(nacionalidade) like ?1", sortObj, "%" + q.toLowerCase() + "%");
@@ -35,11 +41,17 @@ public class DesenvolvedoraResource {
         response.totalItens = query.count();
         response.totalPaginas = query.pageCount();
         response.temMais = page < (query.pageCount() - 1);
-        response.proximaPagina = response.temMais ? "/desenvolvedoras/search?q=" + (q != null ? q : "") + "&page=" + (page + 1) + "&size=" + size : "";
+
+        // --- MELHORIA: Corrigido para incluir sort e direction na URL ---
+        response.proximaPagina = response.temMais
+                ? String.format("/desenvolvedoras/search?q=%s&sort=%s&direction=%s&page=%d&size=%d",
+                (q != null ? q : ""), sort, direction, (page + 1), size)
+                : "";
 
         return Response.ok(response).build();
     }
 
+    // ... (o restante da classe permanece o mesmo) ...
     @GET
     @Path("/{id}")
     public Response getById(@PathParam("id") long id) {
@@ -70,7 +82,7 @@ public class DesenvolvedoraResource {
 
         if (newDev.perfil != null) {
             if (entity.perfil == null) {
-                entity.perfil = new br.senac.tsi.gamecatalog.PerfilDesenvolvedora();
+                entity.perfil = new PerfilDesenvolvedora();
             }
             entity.perfil.historia = newDev.perfil.historia;
             entity.perfil.principaisFranquias = newDev.perfil.principaisFranquias;
@@ -97,4 +109,3 @@ public class DesenvolvedoraResource {
         return Response.noContent().build();
     }
 }
-

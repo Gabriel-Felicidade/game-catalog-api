@@ -26,16 +26,12 @@ public class Desenvolvedora extends PanacheEntityBase {
     public String nacionalidade;
 
     // Relacionamento Um-para-Um (lado dono)
-    // Uma desenvolvedora tem um perfil. Cascade ALL significa que ao salvar/deletar
-    // uma desenvolvedora, o perfil associado também será salvo/deletado.
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "perfil_id")
-    public br.senac.tsi.gamecatalog.PerfilDesenvolvedora perfil;
+    public PerfilDesenvolvedora perfil; // Simplificado
 
     // Relacionamento Um-para-Muitos
-    // Uma desenvolvedora pode ter vários jogos.
     @OneToMany(mappedBy = "desenvolvedora", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JsonIgnore // Evita loop na serialização
-    public List<br.senac.tsi.gamecatalog.Jogo> jogos = new ArrayList<>();
+    @JsonIgnore
+    public List<Jogo> jogos = new ArrayList<>(); // Simplificado
 }
-
